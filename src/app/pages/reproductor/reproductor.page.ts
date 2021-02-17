@@ -38,26 +38,17 @@ export class ReproductorPage implements OnInit {
   mostrar = false;
   textoparaver: string = '';
   get_duration_interval: any;
-  listaFondos: ImagenFondo[] = [];
   idalumno;
   idLibro;
   i = 0;
-  numeroDeFrame = 0;
   listaEscenas: EscenaFrames[] = [];
-  listaFrames: Frame[] = [];
-  listaFotos = [];
-  listavotantesconcurso: any = [];
-  fotoimagen: string;
-  rate: any;
-  rate1: any;
-  rate2: any;
-  rate3: any;
-  libro: Libro;
+   listavotantesconcurso: any = [];
+   libro: Libro;
   puntuacion: any;
   listapuntuacion: any = [];
   listavotantes: any = [];
-  duracion;
-  tiempo;
+ 
+
   concurso: Concurso;
   criterio1: number;
   criterio1guar: any;
@@ -65,26 +56,34 @@ export class ReproductorPage implements OnInit {
   criterio3guar: any;
   criterio2: number;
   criterio3: number;
-  votante = false;
-  votantec = false;
-  tengoconcurso = false;
+
+  
+  modo: any = 0;
+  tiemporepro = 1000;
+  notificacionvotar = 'a';
+   audioFrame: any;
+  listacompleja = [];
+  
+// Elementos que se muestran en pantalla
+  rate: any;
+  rate1: any;
+  rate2: any;
+  rate3: any;
   c1: any = '';
   c2: any = '';
   c3: any = '';
   criteriototal;
-  tipoaudio;
-  modo: any = 0;
-  tiemporepro = 1000;
-  notificacionvotar = 'a';
-  url = 'http://localhost:3000/api/imagenes/';
-  audioFrame: any;
-  listacompleja = [];
-  
+  votante = false;
+  votantec = false;
+  tengoconcurso = false;
+ 
 
   constructor(private router: Router, private socketservice: SocketsService, private peticionesAPI: PeticionesapiService, private dataservice: DataService, private activatedRoute: ActivatedRoute) {
 
   }
 
+
+  // La conexion con el socckersservice se hace al entrar en la pagina del reproductor
   ngOnInit() {
 
     this.socketservice.conectar();
@@ -108,18 +107,12 @@ export class ReproductorPage implements OnInit {
     this.damelibro();
     
 
-    //////////borrar esto/////////////
-    ////////////////////////////////
-    //////////////////////////////////
-    // this.socketservice.votarnoti(this.notificacionvotar);
-    // this.socketservice.recibirprueba()
-    // .subscribe((res: any) => {
-
-    //   console.log(res);
-    // });
+  
 
   }
 
+  // caracteristicas de las ionslides
+  
   slideOpts = {
     speed: 10,
     initialSlide: 0,
@@ -294,19 +287,18 @@ export class ReproductorPage implements OnInit {
 
   }
 
-  ///////////////////////7reproducir cuento///////////////////////////////////
+  ///////////////////////reproducir cuento///////////////////////////////////
 
   dameEscenas() {
-
-
+  var tipoaudio;
     this.peticionesAPI.dameEscenasLibro(this.idLibro)
       .subscribe(res => {
         console.log(res);
 
         res.forEach(element => {
           this.listaEscenas.push(element);
-          this.tiempo = element.duracionFrame;
-          this.tipoaudio = element.tipoAudio;
+          var tiempo = element.duracionFrame;
+         tipoaudio = element.tipoAudio;
         });
         this.dameFrames();
       });
@@ -316,7 +308,7 @@ export class ReproductorPage implements OnInit {
 
 
   dameFrames() {
-
+    var numeroDeFrame = 0;
     this.listaEscenas.forEach(element => {
       var id = element.id;
 
@@ -326,9 +318,9 @@ export class ReproductorPage implements OnInit {
           console.log(res);
 
           res.forEach(element => {
-            element.contador = this.numeroDeFrame;
+            element.contador = numeroDeFrame;
             lista.push(element);
-            this.numeroDeFrame++;
+           numeroDeFrame++;
 
           });
           this.obtenerFrames2(lista);
@@ -341,8 +333,11 @@ export class ReproductorPage implements OnInit {
 
   obtenerFrames2(lista) {
 
-    /////////////////cambiar var contenedor///////////////////////////
-    var contenedor = this.libro.titulo;
+  var fotoimagen: string;
+  var  listaFotos = [];
+   var url = 'http://localhost:3000/api/imagenes/';
+
+        var contenedor = this.libro.titulo;
     lista.forEach(element => {
 
       var objetolista = {
@@ -365,9 +360,9 @@ export class ReproductorPage implements OnInit {
               console.log(reader.error)
             } else {
 
-              this.fotoimagen = reader.result.toString();
-              this.listaFotos.push(this.fotoimagen);
-              objetolista.frame = this.fotoimagen;
+              fotoimagen = reader.result.toString();
+              listaFotos.push(fotoimagen);
+              objetolista.frame = fotoimagen;
               objetolista.audio = element.audioUrl;
               objetolista.escena = element.escenaid;
               objetolista.numero = element.contador;
@@ -381,7 +376,7 @@ export class ReproductorPage implements OnInit {
               }
 
               if (objetolista.audio != '') {
-                var audio = this.url + this.libro.titulo + "/download/" + objetolista.audio;
+                var audio = url + this.libro.titulo + "/download/" + objetolista.audio;
                 // this.audioFrame = audio;
                 objetolista.audio = audio;
                 // var audio =  this.url + this.libro.titulo + "/download/" + objetolista.audio;
@@ -407,7 +402,7 @@ export class ReproductorPage implements OnInit {
     });
 
   }
-
+//////////////////////////////// implementación no acabada, muestra la lista de escenas de el cuento, al clikar en una te dirije a la primera pagina de la escena//////////////
   entrarenaescena(numero) {
     var a = 0;
     var encontrado;
@@ -521,6 +516,8 @@ export class ReproductorPage implements OnInit {
       }
 
     }
+
+    /////////////// en reproducción automatica/////////////
     slideNextr() {
       clearInterval(this.get_duration_interval);
       this.slides.slideNext();

@@ -42,7 +42,6 @@ import { url } from 'inspector';
 })
 
 
-
 export class CuentocanvasPage implements OnInit {
    @ViewChild('canvas') canvasEl: ElementRef;
    private _CANVAS: any;
@@ -348,10 +347,7 @@ export class CuentocanvasPage implements OnInit {
    }
 
 
-   salir()
-   {
-      this.router.navigate(["login"]);
-   }
+
 
 
    cargarAlumnoJuegoLibro() {
@@ -573,7 +569,7 @@ export class CuentocanvasPage implements OnInit {
 
       this.escenaFrames.frames[this.frameActual.numero - 1] = this.frameActual;
       this.generarListaPersonajesEnPantalla();
-      this.firstDrawImages(this.frameActual.personajes);
+      this.drawimages(this.frameActual.personajes);
 
       this.guardarFoto();
    }
@@ -823,9 +819,8 @@ export class CuentocanvasPage implements OnInit {
       this.escenaFrames.numeroFrames = this.escenaFrames.numeroFrames + 1;
 
       this.frameActual = newFrame;
-      this.firstDrawImages(this.frameActual.personajes);
+      this.drawimages(this.frameActual.personajes);
       var contenedor = localStorage.getItem("contenedor");
-      this.textoPrueba = this.frameActual.textos;
       this.tieneVoz = false;
       if(this.frameActual.audioUrl != "" && this.showButtonAudioFrame == true)
       {
@@ -838,22 +833,13 @@ export class CuentocanvasPage implements OnInit {
          this.tieneVoz = true;
       }
 
-      this.generarListaPersonajesEnPantalla();
-
-       var newFrameCopia =  newFrame;
-       newFrameCopia.personajes.forEach(per => {
-            per.url = "";
-         });
-
-      this.peticionesApiService.postFrame(this.escenaFrames.id, newFrameCopia).subscribe(async (res) => {
+      this.peticionesApiService.postFrame(this.escenaFrames.id, newFrame).subscribe(async (res) => {
 
          this.frameActual.id = res.id;
          await this.uploadNumeroFrameEscena()
       }, (err) => {
          console.log(err);
       })
-
-
 
    }
 
@@ -870,7 +856,7 @@ export class CuentocanvasPage implements OnInit {
          this.frameActual = this.escenaFrames.frames[numero];
          this.escenaFrames.numeroframeActual = numero + 1;
          this.escenaFrames.numeroFrames
-         this.firstDrawImages(this.frameActual.personajes);
+         this.drawimages(this.frameActual.personajes);
          this.generarListaPersonajesEnPantalla();
          this.textoPrueba = this.frameActual.textos;
          var contenedor = localStorage.getItem("contenedor");
@@ -912,7 +898,7 @@ export class CuentocanvasPage implements OnInit {
          var numero = this.frameActual.numero;
          this.frameActual = this.escenaFrames.frames[numero - 2];
          this.escenaFrames.numeroframeActual = numero - 1;
-         this.firstDrawImages(this.frameActual.personajes);
+         this.drawimages(this.frameActual.personajes);
          this.generarListaPersonajesEnPantalla();
          var contenedor = localStorage.getItem("contenedor");
          this.textoPrueba = this.frameActual.textos;
@@ -1389,7 +1375,7 @@ export class CuentocanvasPage implements OnInit {
 
    async drawimages(listaPersonajesFrame) {
 
-      // this.clearCanvas();
+      this.clearCanvas();
       this.refreshFondo();
       // this.lineaTexto();
       var listaFotoRecuros = this.dataService.getDataRecursos(1);
