@@ -17,7 +17,7 @@ import { AnyTxtRecord } from 'dns';
 import { analyzeAndValidateNgModules } from '@angular/compiler';
 import { SSL_OP_CISCO_ANYCONNECT } from 'constants';
 import { of } from 'rxjs';
-import {Router} from '@angular/router'
+import { Router } from '@angular/router'
 
 
 @Component({
@@ -76,7 +76,7 @@ export class ReproductorPage implements OnInit {
   votante = false;
   votantec = false;
   tengoconcurso = false;
- 
+  fotoToShow: any = '../../../assets/imgs/milibros.png'
 
   constructor(private router: Router, private socketservice: SocketsService, private peticionesAPI: PeticionesapiService, private dataservice: DataService, private activatedRoute: ActivatedRoute) {
 
@@ -105,7 +105,7 @@ export class ReproductorPage implements OnInit {
 
     this.dameEscenas();
     this.damelibro();
-    
+
 
   
 
@@ -218,30 +218,27 @@ export class ReproductorPage implements OnInit {
   libroconcursante() {
 
 
-    
+
 
 
     this.concurso = this.dataservice.getdataconcurso();
-    if (this.concurso.concursoTematica != '') {     
+    if (this.concurso.concursoTematica != '') {
 
-      if(this.concurso.concursoPrimerCriterio != '')
-      {
+      if (this.concurso.concursoPrimerCriterio != '') {
         this.c1 = this.concurso.concursoPrimerCriterio;
 
       }
-      if(this.concurso.concursoSegundoCriterio != '')
-      {
+      if (this.concurso.concursoSegundoCriterio != '') {
         this.c2 = this.concurso.concursoSegundoCriterio;
 
       }
-      if(this.concurso.concursoTercerCriterio != '')
-      {
+      if (this.concurso.concursoTercerCriterio != '') {
         this.c3 = this.concurso.concursoTercerCriterio;
 
       }
-    
-    
-  }
+
+
+    }
 
 
 
@@ -331,7 +328,7 @@ export class ReproductorPage implements OnInit {
 
   }
 
-  obtenerFrames2(lista) {
+ obtenerFrames2(lista) {
 
   var fotoimagen: string;
   var  listaFotos = [];
@@ -350,6 +347,15 @@ export class ReproductorPage implements OnInit {
 
       }
 
+      var objetolistaFirst = {
+        frame: '',
+        escena: String,
+        audio: '',
+        numero: Number,
+        duracion: Number,
+        texto: ' '
+
+      }
       this.peticionesAPI.getImagen(element.portadaFrame, contenedor)
         .subscribe((res) => {
           const blob = new Blob([res.blob()], { type: 'image/png' });
@@ -365,13 +371,12 @@ export class ReproductorPage implements OnInit {
               objetolista.frame = fotoimagen;
               objetolista.audio = element.audioUrl;
               objetolista.escena = element.escenaid;
-              objetolista.numero = element.contador;
+              objetolista.numero = element.contador + 1;
               objetolista.duracion = element.duracionAudio;
-              if (element.textos != undefined && element.textos != null && element.textos != "")
-              {
+              if (element.textos != undefined && element.textos != null && element.textos != "") {
                 objetolista.texto = element.textos;
               }
-              else{
+              else {
                 objetolista.texto = " ";
               }
 
@@ -381,6 +386,21 @@ export class ReproductorPage implements OnInit {
                 objetolista.audio = audio;
                 // var audio =  this.url + this.libro.titulo + "/download/" + objetolista.audio;
                 // objetolista.audio = audio;
+              }
+
+              if(element.contador == 0){
+
+              const cero = 1;
+              fotoimagen = reader.result.toString();
+              listaFotos.push(this.fotoToShow);
+              objetolistaFirst.frame = fotoimagen;
+              objetolistaFirst.audio = '';
+              objetolistaFirst.escena = element.escenaid;
+              objetolistaFirst.numero = element.contador;
+              objetolistaFirst.duracion = element.duracionAudio;
+
+              this.listacompleja.push(objetolistaFirst);
+
               }
 
               this.listacompleja.push(objetolista);
@@ -453,11 +473,10 @@ export class ReproductorPage implements OnInit {
     this.slides.slidePrev();
     this.i--;
 
-    if(this.listacompleja[this.i].texto != undefined || this.listacompleja[this.i].texto != null)
-    {
+    if (this.listacompleja[this.i].texto != undefined || this.listacompleja[this.i].texto != null) {
       this.textoparaver = this.listacompleja[this.i].texto;
     }
-    else{
+    else {
 
       this.textoparaver = ' ';
     }
@@ -476,52 +495,44 @@ export class ReproductorPage implements OnInit {
       }
     }
   }
-  salir()
-  {
-     this.router.navigate(["login"]);
+  salir() {
+    this.router.navigate(["login"]);
   }
-    slideNext()
-    {
-      this.slides.slideNext();
-      this.i++;
+  slideNext() {
+    this.slides.slideNext();
+    this.i++;
+    this.textoparaver = this.listacompleja[this.i].texto;
+    if (this.listacompleja[this.i].texto != undefined) {
       this.textoparaver = this.listacompleja[this.i].texto;
-      if (this.listacompleja[this.i].texto != undefined) {
-        this.textoparaver = this.listacompleja[this.i].texto;
-      }
-      else {
-        this.textoparaver = '';
-
-      }
-      if (this.listacompleja[this.i].audio != '') {
-        this.audioFrame = this.listacompleja[this.i].audio;
-
-      }
-      else {
-        this.audioFrame = '';
-      }
+    }
+    else {
+      this.textoparaver = '';
 
     }
-
-    goToSlide() {
-
-      this.textoparaver = this.listacompleja[this.i].texto;
-      this.slides.slideTo(this.i);
-      if (this.listacompleja[this.i].audio != '') {
-        this.audioFrame = this.listacompleja[this.i].audio;
-        this.tiemporepro = 1000 * this.listacompleja[this.i].duracion;
-      }
-      else {
-        this.audioFrame = '';
-        this.tiemporepro = 1000 * 10;
-      }
+    if (this.listacompleja[this.i].audio != '') {
+      this.audioFrame = this.listacompleja[this.i].audio;
 
     }
+    else {
+      this.audioFrame = '';
+    }
 
+  }
+
+  goToSlide() {
+
+    this.textoparaver = this.listacompleja[this.i].texto;
+    this.slides.slideTo(this.i);
+    if (this.listacompleja[this.i].audio != '') {
+      this.audioFrame = this.listacompleja[this.i].audio;
+      this.tiemporepro = 1000 * this.listacompleja[this.i].duracion;
+    }
+  }
     /////////////// en reproducción automatica/////////////
     slideNextr() {
       clearInterval(this.get_duration_interval);
       this.slides.slideNext();
-
+  
       this.i++;
       this.textoparaver = this.listacompleja[this.i].texto;
       if (this.listacompleja[this.i].texto != undefined) {
@@ -529,7 +540,7 @@ export class ReproductorPage implements OnInit {
       }
       else {
         this.textoparaver = '';
-
+  
       }
       if (this.listacompleja[this.i].audio != '') {
         this.audioFrame = this.listacompleja[this.i].audio;
